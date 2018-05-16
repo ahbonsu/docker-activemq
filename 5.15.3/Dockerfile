@@ -7,6 +7,8 @@ ENV SHA512_VAL=b6b73d15d6f54e459655009d3d8d84ab66a87f354aebfc656855371535914f538
 
 ENV ACTIVEMQ_HOME /opt/activemq
 
+ENV MYSQL_SERVER_NAME mysqlServerName
+
 
 RUN curl "https://archive.apache.org/dist/activemq/$ACTIVEMQ_VERSION/$ACTIVEMQ-bin.tar.gz" -o $ACTIVEMQ-bin.tar.gz
 
@@ -19,9 +21,15 @@ RUN if [ "$SHA512_VAL" != "$(sha512sum $ACTIVEMQ-bin.tar.gz | awk '{print($1)}')
 
 RUN tar xzf $ACTIVEMQ-bin.tar.gz -C  /opt && \
     ln -s /opt/$ACTIVEMQ $ACTIVEMQ_HOME && \
-    useradd -r -M -d $ACTIVEMQ_HOME activemq && \
-    chown -R activemq:activemq /opt/$ACTIVEMQ && \
-    chown -h activemq:activemq $ACTIVEMQ_HOME 
+    useradd -r -M -d $ACTIVEMQ_HOME activemq
+
+COPY mysql-connector-java-5.1.46-bin.jar $ACTIVEMQ_HOME/lib/optional
+COPY activemq.xml $ACTIVEMQ_HOME/conf
+
+RUN chown -R activemq:activemq /opt/$ACTIVEMQ && \
+    chown -h activemq:activemq $ACTIVEMQ_HOME
+
+RUN ls -lah $ACTIVEMQ_HOME/conf/activemq.xml
 
 USER activemq
 
